@@ -37,12 +37,13 @@ namespace BlackKiteTask.Handlers
         public async Task Scan(string companyDomain)
         {
             var startDate = DateTime.Now;
+            _logger.LogInformation($"Attempting to start scan for {companyDomain} ...");
             var postCompanyResp = await _companyService.PostCompany(new PostCompaniesRequest
             {
                 MainDomainValue = companyDomain,
                 EcosystemId = 16420
             });
-            _logger.LogInformation($"Scan Started for {companyDomain} domain...");
+            _logger.LogInformation($"Scan Started. CompanyId: {postCompanyResp.CompanyId} ...");
             await StartPolling(postCompanyResp.CompanyId);
             _logger.LogInformation("Scan Completed. Elapsed Time: {ElapsedTime} Seconds", (DateTime.Now - startDate).TotalSeconds);
 
@@ -75,8 +76,8 @@ namespace BlackKiteTask.Handlers
                 try
                 {
                     _logger.LogInformation("Getting scan status...");
-                    getCompanyResp = await _companyService.GetCompany(new GetCompaniesRequest { Id = companyId });
 
+                    getCompanyResp = await _companyService.GetCompany(new GetCompaniesRequest { Id = companyId });
                     var scanStatusAsEnum = Enum.Parse<ScanStatus>(getCompanyResp.ScanStatus.Replace(" ",""));
 
                     switch (scanStatusAsEnum)
@@ -109,8 +110,7 @@ namespace BlackKiteTask.Handlers
 
                     //Wait to poll
                     await Task.Delay((int)(_pollPeriodInSeconds * 1000f));
-
-                    //Reset retry count after a successful update
+                    //Reset retry count if there is no exception
                     retryCounterOnException = _retryOnExceptionCount; 
 
                 } catch(HttpRequestException exc)
@@ -148,8 +148,9 @@ namespace BlackKiteTask.Handlers
             }
 
             //If success (Extended + Ready) then export results to results file
-            _logger.LogInformation("Scan results received, exporting results to results.json file...");
-            Utils.ExportAsJson("results", getCompanyResp);
+            string fileName = $"results-{companyId}";
+            _logger.LogInformation("Scan results received, exporting results to {fileName}.json file...", fileName);
+            Utils.ExportAsJson(fileName, getCompanyResp);
             _logger.LogInformation("Scan results exported.");
         }
     }

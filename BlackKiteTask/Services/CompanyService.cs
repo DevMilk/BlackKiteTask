@@ -1,14 +1,6 @@
-﻿using Azure.Core;
-using BlackKiteTask.Common.Infrastructure;
+﻿using BlackKiteTask.Common.Infrastructure;
 using BlackKiteTask.Requests.Company;
 using BlackKiteTask.Responses.Company;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BlackKiteTask.Services
 {
